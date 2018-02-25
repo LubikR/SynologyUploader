@@ -11,9 +11,9 @@ Thanks to [ma1co](https://github.com/ma1co) for creating the framework and many 
 
 ### Usage
 After the first run you have to set connection properties to Synology server (button Settings), ie. IP address, user name, password and shared directory on Synology server. All these attributes are checked before storing to the app's preferences. Fields are:
-Address or IP - fill in Synology address or IP without 'http://' or port
-User - User on Synology server
-Password - User's password
-Directory - Directory where the photos will be uploaded. Program creates subdirectory in form : Entered directory / Camera Model / Date in format DDMMYYYY / Uploaded pictures
+* Address or IP - fill in Synology address or IP without 'http://' or port
+* User - User on Synology server
+* Password - User's password
+* Directory - Directory where the photos will be uploaded. Program creates subdirectory in form : Entered directory / Camera Model / Date in format DDMMYYYY / Uploaded photos
 
-##### All successfully pictures are deleted from the camera. It will be solved in next release, hopefully
+##### All successfully uploaded photos are deleted from the camera. It will be solved in next release, hopefully
