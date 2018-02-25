@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">SynologyUploader</string>
+    <string name="buttonSettings">Settings</string>
+    <string name="buttonGo">Upload Now!</string>
+    <string name="counter">Ready...</string>
+    <string name="address">Address or IP</string>
+    <string name="user">User</string>
+    <string name="passwd">Password</string>
+    <string name="buttonSave">Check it!</string>
+    <string name="settingViewStatus">helper</string>
+    <string name="settingViewDirectory">Directory</string>
+</resources>
