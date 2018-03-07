@@ -1,5 +1,5 @@
 # SynologyUploader
-SynologyUploader is app for Sony cameras using [OpenMemories: Framework](https://github.com/ma1co/OpenMemories-Framework). This application uses official [Synology API](https://global.download.synology.com/download/Document/DeveloperGuide/Synology_Download_Station_Web_API.pdf)
+SynologyUploader is app for Sony cameras using [OpenMemories: Framework](https://github.com/ma1co/OpenMemories-Framework). This application uses official [Synology API](https://global.download.synology.com/download/Document/DeveloperGuide/Synology_File_Station_API_Guide.pdf)
 
 ### Prerequisites
 Application assumed that the wifi connection is established, if not error message will be shown to the user during the connection check to the Synology server.
@@ -16,4 +16,4 @@ After the first run you have to set connection properties to Synology server (bu
 * Password - User's password
 * Directory - Directory where the photos will be uploaded. Program creates subdirectory in form : Entered directory / Camera Model / Date in format DDMMYYYY / Uploaded photos
 
-##### All successfully uploaded photos are deleted from the camera. It will be solved in next release, hopefully
+##### All successfully uploaded photos are deleted from the camera. It will be solved by user choice in next release, hopefully
