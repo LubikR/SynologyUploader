@@ -19,6 +19,7 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".MainActivity" />
         </activity>
+        <activity android:name=".NewsActivity" />
     </application>
 
 </manifest>

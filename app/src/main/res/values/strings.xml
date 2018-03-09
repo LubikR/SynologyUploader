@@ -9,4 +9,15 @@
     <string name="buttonSave">Check it!</string>
     <string name="settingViewStatus">helper</string>
     <string name="settingViewDirectory">Directory</string>
+    <string name="chckBoxUseHttps">Https</string>
+    <string name="port">Port</string>
+    <string name="chckBoxDelete">Delete photos after successfull upload</string>
+
+    <string name="VersionRead">VersionRead</string>
+    <string name="newsFirstRow">New release is here!</string>
+    <string name="news"><b>Version 1.1</b>\n
+        - IP port added for users who don\'t use standard ports (http - 5000, https - 5001). Please add your port at Settings\n
+        - User can choose if successfully uploaded photos wil be deleted or not\n
+        - HTTPS support added\n
+    </string>
 </resources>

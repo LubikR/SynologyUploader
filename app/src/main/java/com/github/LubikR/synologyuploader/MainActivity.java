@@ -39,21 +39,23 @@ public class MainActivity extends Activity {
     String maxVersionUpload = new String();
     String sid = new String();
 
-    final static String Protocol = "http://";
-    final static String Port = ":5000";
+    final static String ProtocolHTTP = "http://";
+    final static String ProtocolHTTPS = "https://";
     final static String RootAPI = "/webapi/";
     final static String uploadAPI = "entry.cgi";
     String getAPIs = "query.cgi?api=SYNO.API.Info&version=1&method=query&query=SYNO.API.Auth,SYNO.FileStation.Upload";
     String authAPI = "auth.cgi?api=SYNO.API.Auth&version=VERSION&method=login&account=USER&passwd=PASSWORD&session=FileStation&format=cookie";
     String authAPILogout = "auth.cgi?api=SYNO.API.Auth&version=VERSION&method=logout&_sid=SID";
 
-    String Address;
+    String address;
     String IP = null;
     String user = null;
     String passwd = null;
     String directory = null;
+    String port = null;
 
-    private static long backupPressedTime;
+    private boolean httpsBoolean;
+    private boolean deleteAfterUpload;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,6 +75,11 @@ public class MainActivity extends Activity {
 
         checkIfAlreadySet();
 
+        if (SharedPreferencesManager.read(getString(R.string.VersionRead),null) == null) {
+            Intent intent = new Intent(MainActivity.this, NewsActivity.class);
+            startActivity(intent);
+        }
+
         btnSettings.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -83,12 +90,16 @@ public class MainActivity extends Activity {
     }
 
         private void checkIfAlreadySet() {
-            if ((IP = SharedPreferencesManager.read(getString(R.string.address), null)) == null) {
+            if ((port = SharedPreferencesManager.read(getString(R.string.port), null)) == null) {
              btnUpload.setEnabled(false);
             } else {
+                IP = SharedPreferencesManager.read(getString(R.string.address), null);
                 user = SharedPreferencesManager.read(getString(R.string.user), null);
                 passwd = SharedPreferencesManager.read(getString(R.string.passwd), null);
                 directory = SharedPreferencesManager.read(getString(R.string.settingViewDirectory), null);
+                port = SharedPreferencesManager.read(getString(R.string.port), null);
+                httpsBoolean = SharedPreferencesManager.readBoolean(getString(R.string.chckBoxUseHttps), false);
+                deleteAfterUpload = SharedPreferencesManager.readBoolean(getString(R.string.chckBoxDelete), false);
                 btnUpload.setEnabled(true);
             }
         }
@@ -96,7 +107,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-       checkIfAlreadySet();
+        checkIfAlreadySet();
     }
 
     public void uploadNowClick(View view) {
@@ -124,7 +135,7 @@ public class MainActivity extends Activity {
             Cursor cursor = mediaManager.queryImages();
 
             if (cursor == null) {
-                publishProgress("Not possible to get images.");
+                publishProgress("Not possible to get images. Probably not supported device.");
                 result = -1;
             } else if ((count = cursor.getCount()) == 0) {
                 publishProgress("Nothing to upload.");
@@ -134,12 +145,17 @@ public class MainActivity extends Activity {
                 try {
                     int i = 0;
                     String model = DeviceInfo.getInstance().getModel();
-                    Address = Protocol + IP + Port + RootAPI;
+
+                    if (httpsBoolean) {
+                        address = MainActivity.ProtocolHTTPS;
+                    } else {
+                        address = MainActivity.ProtocolHTTP;
+                    }
+                    address = address + IP + ":" + port + RootAPI;
 
                     //Check Synology API and retrieve maxVersion
-                    Http.Response response = Http.get(Address + getAPIs);
-                    String json = new String(response.getResponseBytes());
-                    response.close();
+                    HttpConn connection = new HttpConn(address + getAPIs);
+                    String json = new String(connection.finish());
                     JSONObject jsonObject = new JSONObject(json);
                     maxVersionAuth = ((jsonObject.getJSONObject("data")).getJSONObject("SYNO.API.Auth")).getString("maxVersion");
                     maxVersionUpload = ((jsonObject.getJSONObject("data")).getJSONObject("SYNO.FileStation.Upload")).getString("maxVersion");
@@ -147,9 +163,9 @@ public class MainActivity extends Activity {
                     // Login to Synology
                     authAPI = authAPI.replace("USER", user);
                     authAPI = authAPI.replace("PASSWORD", passwd);
-                    response = Http.get(Address + authAPI.replace("VERSION", maxVersionAuth));
-                    json = new String(response.getResponseBytes());
-                    response.close();
+                    authAPI = authAPI.replace("VERSION", maxVersionAuth);
+                    connection = new HttpConn(address + authAPI);
+                    json = new String(connection.finish());
                     jsonObject = new JSONObject(json);
                     sid = jsonObject.getJSONObject("data").getString("sid");
 
@@ -162,7 +178,7 @@ public class MainActivity extends Activity {
 
                         publishProgress("Uploading " + i + " / " + count);
 
-                        MultiPartUpload multipart = new MultiPartUpload(Address + uploadAPI, "UTF-8", sid);
+                        MultiPartUpload multipart = new MultiPartUpload(address + uploadAPI, "UTF-8", sid);
 
                         multipart.addFormField("api", "SYNO.FileStation.Upload");
                         multipart.addFormField("version", maxVersionUpload);
@@ -175,11 +191,13 @@ public class MainActivity extends Activity {
                         String uploadResult = new JSONObject(json2).getString("success");
 
                         if (uploadResult.equals("true")) {
-                            // Delete uploaded image
-                            ContentResolver resolver = getApplicationContext().getContentResolver();
-                            Uri uri = mediaManager.getImageContentUri();
-                            long id = mediaManager.getImageId(cursor);
-                            AvindexStore.Images.Media.deleteImage(resolver, uri, id);
+                            if (deleteAfterUpload) {
+                                // Delete uploaded image
+                                ContentResolver resolver = getApplicationContext().getContentResolver();
+                                Uri uri = mediaManager.getImageContentUri();
+                                long id = mediaManager.getImageId(cursor);
+                                AvindexStore.Images.Media.deleteImage(resolver, uri, id);
+                            }
                         } else {
                             String errorCode = new JSONObject(json2).getJSONObject("error").getString("code");
                             throw new HttpException(errorCode);
@@ -192,9 +210,8 @@ public class MainActivity extends Activity {
                     authAPILogout = authAPILogout.replace("SID", sid);
 
                     //Do logout
-                    response = Http.get(Address + authAPILogout);
-                    json = new String(response.getResponseBytes());
-                    response.close();
+                    connection = new HttpConn(address + authAPILogout);
+                    json = new String(connection.finish());
                     jsonObject = new JSONObject(json);
 
                 } catch (Exception e) {
@@ -245,7 +262,7 @@ public class MainActivity extends Activity {
             case ScalarInput.ISV_KEY_MENU:
                 return onDeleteKeyUp();
             default:
-                return super.onKeyUp(keyCode, event);
+                return super.onKeyDown(keyCode, event);
         }
     }
 

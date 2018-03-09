@@ -6,3 +6,4 @@
 /build
 /gradle
 /gradlew*
+/app/src/main/java/com/github/LubikR/synologyuploader/Helper.java

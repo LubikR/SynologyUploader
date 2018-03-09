@@ -1,23 +1,20 @@
 package com.github.LubikR.synologyuploader;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.UUID;
 
 public class MultiPartUpload {
-    private static final String DELIMITER = "--AaB03x";
-    private static final String DEL = "AaB03x";
+
+    private String DELIMITER_SHORT = UUID.randomUUID().toString();
+    private String DELIMITER = "--" + DELIMITER_SHORT;
     private static final String CRLF = "\r\n";
     private HttpURLConnection connection;
     private OutputStream outputStream;
@@ -34,7 +31,7 @@ public class MultiPartUpload {
         connection.setRequestProperty("Cookie", sidCookie);
         connection.setDoOutput(true);
         connection.setDoInput(true);
-        connection.setRequestProperty("Content-type", "multipart/form-data, boundary=" + DEL);
+        connection.setRequestProperty("Content-type", "multipart/form-data, boundary=" + DELIMITER_SHORT);
         outputStream = connection.getOutputStream();
         writer = new PrintWriter(new OutputStreamWriter(outputStream, charset), true);
     }
@@ -48,21 +45,20 @@ public class MultiPartUpload {
     }
 
     public void addFilePart (String fieldName, FileInputStream uploadFileStream, String fileName) throws IOException {
-        //String fileName = uploadFile.getName();
+
         writer.append(DELIMITER).append(CRLF);
         writer.append("content-disposition: form-data; name=\"" + fieldName + "\"; filename=\"" + fileName + "\"")
                 .append(CRLF);
         writer.append("Content-Type: application/octet-stream").append(CRLF).append(CRLF);
         writer.flush();
 
-        //FileInputStream inputStream = new FileInputStream(uploadFile);
         byte[] buffer = new byte[4096];
         int bytesRead = -1;
         while ((bytesRead = uploadFileStream.read(buffer)) != -1) {
             outputStream.write(buffer, 0, bytesRead);
         }
         outputStream.flush();
-        //inputStream.close();
+
         uploadFileStream.close();
 
         writer.append(CRLF).append(DELIMITER).append("--").append(CRLF);

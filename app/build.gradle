@@ -5,11 +5,11 @@ android {
     buildToolsVersion '26.0.2'
 
     defaultConfig {
-        applicationId "cz.github.LubikR.synologyuploader"
+        applicationId "com.github.LubikR.synologyuploader"
         minSdkVersion 10
         targetSdkVersion 10
-        versionCode 1
-        versionName "1.0"
+        versionCode 2
+        versionName "1.1"
     }
 
     compileOptions {

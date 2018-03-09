@@ -5,8 +5,9 @@ import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.TextView;
+import android.widget.Toast;
 
 import com.sony.scalar.sysutil.ScalarInput;
 
@@ -31,43 +32,56 @@ public class SettingsActivity extends Activity {
         final EditText editViewUser = (EditText) findViewById(R.id.user);
         final EditText editViewPasswd = (EditText) findViewById(R.id.passwd);
         final EditText editTextDir = (EditText) findViewById(R.id.directory);
-        final TextView textViewStatus = (TextView) findViewById(R.id.settingsViewStaus);
+        final EditText editTextPort = (EditText) findViewById(R.id.port);
 
         final Button btnSave = (Button) findViewById(R.id.buttonSave);
+        final CheckBox chboxSecure = (CheckBox) findViewById(R.id.checkBox_Secure);
+        final CheckBox checkBoxDelete = (CheckBox) findViewById(R.id.checkBox_Delete);
 
         editViewServer.setText(SharedPreferencesManager.read(getString(R.string.address), null));
 
         editViewUser.setText(SharedPreferencesManager.read(getString(R.string.user), null));
         editViewPasswd.setText(SharedPreferencesManager.read(getString(R.string.passwd), null));
         editTextDir.setText(SharedPreferencesManager.read(getString(R.string.settingViewDirectory), null));
+        editTextPort.setText(SharedPreferencesManager.read(getString(R.string.port), null));
+
+        chboxSecure.setChecked(SharedPreferencesManager.readBoolean(getString(R.string.chckBoxUseHttps), false));
+        checkBoxDelete.setChecked(SharedPreferencesManager.readBoolean(getString(R.string.chckBoxDelete), false));
 
         btnSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                textViewStatus.setText("");
+
                 String result = "Everyting OK! Push the button again to save it.";
                 String ip = editViewServer.getText().toString();
                 String passwd = editViewPasswd.getText().toString();
                 String user = editViewUser.getText().toString();
                 String directory = editTextDir.getText().toString();
+                String port = editTextPort.getText().toString();
                 String maxVersionAuth = null;
+                String address;
 
                 boolean connectionOK = false;
 
                 if (!isOK) {
-                    String address = MainActivity.Protocol + ip + MainActivity.Port + MainActivity.RootAPI;
-                    Http.Response response;
+                    HttpConn connection;
                     String json;
                     JSONObject jsonObject;
                     String sid = null;
 
                     isOK = true;
 
+                    if (chboxSecure.isChecked()) {
+                        address = MainActivity.ProtocolHTTPS;
+                    } else {
+                        address = MainActivity.ProtocolHTTP;
+                    }
+                    address = address + ip + ":" + port + MainActivity.RootAPI;
+
                     //Check connection to Synology
                     try {
-                        response = Http.get(address + getAPIs);
-                        json = new String(response.getResponseBytes());
-                        response.close();
+                        connection = new HttpConn(address + getAPIs);
+                        json = new String(connection.finish());
                         jsonObject = new JSONObject(json);
                         maxVersionAuth = ((jsonObject.getJSONObject("data")).getJSONObject("SYNO.API.Auth")).getString("maxVersion");
                         checkPermissoinVersion = ((jsonObject.getJSONObject("data")).getJSONObject("SYNO.FileStation.CheckPermission")).getString("maxVersion");
@@ -78,13 +92,12 @@ public class SettingsActivity extends Activity {
 
                     if (isOK) {
                         // Login to Synology
-                        String authAPIReplaced = authAPI.replace("USER", user);
-                        authAPIReplaced = authAPIReplaced.replace("PASSWORD", passwd);
-                        authAPIReplaced = authAPIReplaced.replace("VERSION", maxVersionAuth);
+                        authAPI = authAPI.replace("USER", user);
+                        authAPI = authAPI.replace("PASSWORD", passwd);
+                        authAPI = authAPI.replace("VERSION", maxVersionAuth);
                         try {
-                            response = Http.get(address + authAPIReplaced);
-                            json = new String(response.getResponseBytes());
-                            response.close();
+                            connection = new HttpConn(address + authAPI);
+                            json = new String(connection.finish());
                             jsonObject = new JSONObject(json);
                             if ((jsonObject.getString("success")).equals("true")) {
                                 sid = jsonObject.getJSONObject("data").getString("sid");
@@ -98,13 +111,12 @@ public class SettingsActivity extends Activity {
 
                     //Check remote directory a permission
                     if (isOK){
-                        String checkPermissoinAPIReplaced = checkPermissoinAPI.replace("VRSN", checkPermissoinVersion);
-                        checkPermissoinAPIReplaced = checkPermissoinAPIReplaced.replace("DIRECTORY", "/" + directory);
-                        checkPermissoinAPIReplaced = checkPermissoinAPIReplaced.replace("SID", sid);
+                        checkPermissoinAPI = checkPermissoinAPI.replace("VRSN", checkPermissoinVersion);
+                        checkPermissoinAPI = checkPermissoinAPI.replace("DIRECTORY", "/" + directory);
+                        checkPermissoinAPI = checkPermissoinAPI.replace("SID", sid);
                         try {
-                            response = Http.get(address + checkPermissoinAPIReplaced);
-                            json = new String(response.getResponseBytes());
-                            response.close();
+                            connection = new HttpConn(address + checkPermissoinAPI);
+                            json = new String(connection.finish());
                             jsonObject = new JSONObject(json);
                             if ((jsonObject.getString("success")).equals("true")) {
 
@@ -118,28 +130,31 @@ public class SettingsActivity extends Activity {
 
                     if (connectionOK) {
                     //Logout
-                    String authAPILogoutReplaced = authAPILogout.replace("VERSION", maxVersionAuth);
-                    authAPILogoutReplaced = authAPILogoutReplaced.replace("SID", sid);
+                    authAPILogout = authAPILogout.replace("VERSION", maxVersionAuth);
+                    authAPILogout = authAPILogout.replace("SID", sid);
 
-                    try {
-                    response = Http.get(address + authAPILogoutReplaced);
-                    json = new String(response.getResponseBytes());
-                    response.close();
-                    jsonObject = new JSONObject(json);}
-                    catch (Exception e){
-                        //TODO : do something with exceptions
+                        try {
+                            connection = new HttpConn(address + authAPILogout);
+                            json = new String(connection.finish());
+                            jsonObject = new JSONObject(json);
                         }
+                        catch (Exception e){
+                            //TODO : do something with exceptions
+                            }
                     }
 
                     // Show result to the screen
-                    textViewStatus.setText(result);
-                    textViewStatus.setVisibility(View.VISIBLE);
+                    Toast toast = Toast.makeText(getApplicationContext(), result, Toast.LENGTH_LONG);
+                    toast.show();
                 }
                 else {
                     SharedPreferencesManager.write(getString(R.string.address), ip);
                     SharedPreferencesManager.write(getString(R.string.passwd), passwd);
                     SharedPreferencesManager.write(getString(R.string.user), user);
                     SharedPreferencesManager.write(getString(R.string.settingViewDirectory), directory);
+                    SharedPreferencesManager.write(getString(R.string.port), port);
+                    SharedPreferencesManager.writeBoolean(getString(R.string.chckBoxUseHttps), chboxSecure.isChecked());
+                    SharedPreferencesManager.writeBoolean(getString(R.string.chckBoxDelete), checkBoxDelete.isChecked());
                     finish();
                 }
                 // If everything is OK change button text to "Save"
@@ -156,7 +171,7 @@ public class SettingsActivity extends Activity {
             case ScalarInput.ISV_KEY_MENU:
                 return onDeleteKeyUp();
             default:
-                return super.onKeyUp(keyCode, event);
+                return super.onKeyDown(keyCode, event);
         }
     }
 
