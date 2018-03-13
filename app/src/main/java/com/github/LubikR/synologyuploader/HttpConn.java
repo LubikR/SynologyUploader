@@ -1,7 +1,6 @@
 package com.github.LubikR.synologyuploader;
 
 import java.io.ByteArrayOutputStream;
-import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -53,4 +52,5 @@ public class HttpConn {
         }
         return os.toByteArray();
     }
+
 }

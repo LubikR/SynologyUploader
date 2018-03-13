@@ -92,6 +92,13 @@
                 android:layout_marginLeft="10dp"
                 android:text="@string/chckBoxDelete" />
 
+            <CheckBox
+                android:id="@+id/checkBox_Log"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:text="@string/chkkBoxLog" />
+
         </LinearLayout>
 
         <LinearLayout

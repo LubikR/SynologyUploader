@@ -7,6 +7,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
@@ -30,31 +31,17 @@ import java.util.Date;
 
 public class MainActivity extends Activity {
 
+    private final String TAG = "MainActivity";
+
+    DateFormat formatter = new SimpleDateFormat("ddMMyyyy");
+
     Button btnSettings;
     Button btnUpload;
     TextView statusTextView;
 
-    DateFormat formatter = new SimpleDateFormat("ddMMyyyy");
-    String maxVersionAuth = new String();
-    String maxVersionUpload = new String();
-    String sid = new String();
+    String ip, port, user, passwd;
+    Boolean https, debug;
 
-    final static String ProtocolHTTP = "http://";
-    final static String ProtocolHTTPS = "https://";
-    final static String RootAPI = "/webapi/";
-    final static String uploadAPI = "entry.cgi";
-    String getAPIs = "query.cgi?api=SYNO.API.Info&version=1&method=query&query=SYNO.API.Auth,SYNO.FileStation.Upload";
-    String authAPI = "auth.cgi?api=SYNO.API.Auth&version=VERSION&method=login&account=USER&passwd=PASSWORD&session=FileStation&format=cookie";
-    String authAPILogout = "auth.cgi?api=SYNO.API.Auth&version=VERSION&method=logout&_sid=SID";
-
-    String address;
-    String IP = null;
-    String user = null;
-    String passwd = null;
-    String directory = null;
-    String port = null;
-
-    private boolean httpsBoolean;
     private boolean deleteAfterUpload;
 
     @Override
@@ -73,9 +60,12 @@ public class MainActivity extends Activity {
          SharedPreferencesManager.deleteAll();
          **/
 
+        //Check if Connection is already set
         checkIfAlreadySet();
 
-        if (SharedPreferencesManager.read(getString(R.string.VersionRead),null) == null) {
+        //News not read, show it
+        String versionRead = SharedPreferencesManager.read(getString(R.string.VersionRead),null);
+        if (versionRead.equals("1.1")) {
             Intent intent = new Intent(MainActivity.this, NewsActivity.class);
             startActivity(intent);
         }
@@ -84,22 +74,24 @@ public class MainActivity extends Activity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+                if (debug) { Logger.info(TAG, "Going to Settings"); };
                 startActivity(intent);
             }
         });
     }
 
         private void checkIfAlreadySet() {
-            if ((port = SharedPreferencesManager.read(getString(R.string.port), null)) == null) {
+            if ((SharedPreferencesManager.read(getString(R.string.port), null)) == null) {
              btnUpload.setEnabled(false);
             } else {
-                IP = SharedPreferencesManager.read(getString(R.string.address), null);
+                ip = SharedPreferencesManager.read(getString(R.string.address), null);
+                port = SharedPreferencesManager.read(getString(R.string.port), null);
+                https = SharedPreferencesManager.readBoolean(getString(R.string.chckBoxUseHttps), false);
                 user = SharedPreferencesManager.read(getString(R.string.user), null);
                 passwd = SharedPreferencesManager.read(getString(R.string.passwd), null);
-                directory = SharedPreferencesManager.read(getString(R.string.settingViewDirectory), null);
-                port = SharedPreferencesManager.read(getString(R.string.port), null);
-                httpsBoolean = SharedPreferencesManager.readBoolean(getString(R.string.chckBoxUseHttps), false);
                 deleteAfterUpload = SharedPreferencesManager.readBoolean(getString(R.string.chckBoxDelete), false);
+                debug = SharedPreferencesManager.readBoolean(getString(R.string.chkkBoxLog), false);
+
                 btnUpload.setEnabled(true);
             }
         }
@@ -136,40 +128,49 @@ public class MainActivity extends Activity {
 
             if (cursor == null) {
                 publishProgress("Not possible to get images. Probably not supported device.");
+                if (debug) {
+                    Logger.error(TAG, "Not possible to get images. Probably not supported device");
+                }
+                ;
                 result = -1;
             } else if ((count = cursor.getCount()) == 0) {
                 publishProgress("Nothing to upload.");
                 result = -1;
+                if (debug) {
+                    Logger.error(TAG, "Nothing to upload");
+                } ;
             } else {
-
                 try {
                     int i = 0;
-                    String model = DeviceInfo.getInstance().getModel();
 
-                    if (httpsBoolean) {
-                        address = MainActivity.ProtocolHTTPS;
-                    } else {
-                        address = MainActivity.ProtocolHTTP;
-                    }
-                    address = address + IP + ":" + port + RootAPI;
+                    //Get URL
+                    if (debug) {
+                        Logger.info(TAG, "Getting address : " +
+                                ip.replaceAll(".", "*") + ":" + port + " https:" + https); } ;
+                    String address = SynologyAPI.getAddress(ip, port, https);
 
                     //Check Synology API and retrieve maxVersion
-                    HttpConn connection = new HttpConn(address + getAPIs);
-                    String json = new String(connection.finish());
-                    JSONObject jsonObject = new JSONObject(json);
-                    maxVersionAuth = ((jsonObject.getJSONObject("data")).getJSONObject("SYNO.API.Auth")).getString("maxVersion");
-                    maxVersionUpload = ((jsonObject.getJSONObject("data")).getJSONObject("SYNO.FileStation.Upload")).getString("maxVersion");
+                    JSONObject jsonObject = SynologyAPI.CheckAPIAndRetrieveMaxVersions(address);
+                    String maxVersionAuth = ((jsonObject.getJSONObject("data")).getJSONObject("SYNO.API.Auth")).getString("maxVersion");
+                    String maxVersionUpload = ((jsonObject.getJSONObject("data")).getJSONObject("SYNO.FileStation.Upload")).getString("maxVersion");
+                    if (debug) {
+                        Logger.info(TAG, "Got maxVersions: SYNO.API.Auth=" + maxVersionAuth +
+                                ", SYNO.FileStation.Upload=" + maxVersionUpload);
+                    }
+                    ;
 
                     // Login to Synology
-                    authAPI = authAPI.replace("USER", user);
-                    authAPI = authAPI.replace("PASSWORD", passwd);
-                    authAPI = authAPI.replace("VERSION", maxVersionAuth);
-                    connection = new HttpConn(address + authAPI);
-                    json = new String(connection.finish());
-                    jsonObject = new JSONObject(json);
-                    sid = jsonObject.getJSONObject("data").getString("sid");
+                    jsonObject = SynologyAPI.login(address, user, passwd, maxVersionAuth);
+                    String sid = jsonObject.getJSONObject("data").getString("sid");
+                    if (debug) {
+                        Logger.info(TAG, "Logged-in OK, sid=" + sid);
+                    }
+                    ;
 
                     //upload images
+                    String model = DeviceInfo.getInstance().getModel();
+                    String directory = SharedPreferencesManager.read(getString(R.string.settingViewDirectory), null);
+
                     while (cursor.moveToNext()) {
                         i++;
                         ImageInfo info = mediaManager.getImageInfo(cursor);
@@ -178,14 +179,19 @@ public class MainActivity extends Activity {
 
                         publishProgress("Uploading " + i + " / " + count);
 
-                        MultiPartUpload multipart = new MultiPartUpload(address + uploadAPI, "UTF-8", sid);
+                        MultiPartUpload multipart = new MultiPartUpload(address +
+                                SynologyAPI.uploadAPI, "UTF-8", sid);
 
                         multipart.addFormField("api", "SYNO.FileStation.Upload");
                         multipart.addFormField("version", maxVersionUpload);
+                        if (debug) { Logger.info(TAG, "UploadVersion=" + maxVersionUpload); };
                         multipart.addFormField("method", "upload");
                         multipart.addFormField("path", "/" + directory + "/" + model + "/" + formatter.format(date));
+                        if (debug) { Logger.info(TAG, "Path=" + "/" + directory + "/" + model + "/" +
+                                formatter.format(date)); };
                         multipart.addFormField("create_parents", "true");
                         multipart.addFilePart("file", (FileInputStream) info.getFullImage(), filename);
+                        if (debug) { Logger.info(TAG, "Filename=" + filename); };
 
                         String json2 = new String(multipart.finish());
                         String uploadResult = new JSONObject(json2).getString("success");
@@ -200,30 +206,41 @@ public class MainActivity extends Activity {
                             }
                         } else {
                             String errorCode = new JSONObject(json2).getJSONObject("error").getString("code");
+                            if (debug) { Logger.info(TAG, "Error during upload: " + errorCode); };
                             throw new HttpException(errorCode);
                         }
                     }
                     cursor.close();
 
-                    //update logout URI
-                    authAPILogout = authAPILogout.replace("VERSION", maxVersionAuth);
-                    authAPILogout = authAPILogout.replace("SID", sid);
-
-                    //Do logout
-                    connection = new HttpConn(address + authAPILogout);
-                    json = new String(connection.finish());
-                    jsonObject = new JSONObject(json);
+                    // Do logout
+                    jsonObject = SynologyAPI.logout(address, sid, maxVersionAuth);
 
                 } catch (Exception e) {
                     result = -1;
                     if (e instanceof IOException) {
                         publishProgress("Error - " + e.getMessage());
+                        if (debug) {
+                            Logger.error(TAG, "IOException - " + e.getMessage());
+                        }
+                        ;
                     } else if (e instanceof JSONException) {
                         publishProgress("JSON error - " + e.getMessage());
+                        if (debug) {
+                            Logger.error(TAG, "JSONException - " + e.getMessage());
+                        }
+                        ;
                     } else if (e instanceof HttpException) {
                         publishProgress("Connection error : " + e.getMessage());
+                        if (debug) {
+                            Logger.error(TAG, "HttpException - " + e.toString());
+                        }
+                        ;
                     } else {
                         publishProgress("Something wrong with error : " + e.getMessage());
+                        if (debug) {
+                            Logger.error(TAG, "AnotherException - " + e.getMessage());
+                        }
+                        ;
                     }
                 }
             }
@@ -233,6 +250,7 @@ public class MainActivity extends Activity {
         @Override
         protected void onProgressUpdate(String... strings) {
             statusTextView.setText(strings[0]);
+            if (debug) { Logger.info(TAG, "Publish progress: " + strings[0]); };
         }
 
         @Override
@@ -240,6 +258,7 @@ public class MainActivity extends Activity {
             setAutoPowerOffMode(true);
             if (result == 0) {
                 statusTextView.setText("Everything uploaded OK!");
+                if (debug) { Logger.info(TAG, "Everything uploaded OK"); };
             }
             btnUpload.setEnabled(true);
             btnSettings.setEnabled(true);

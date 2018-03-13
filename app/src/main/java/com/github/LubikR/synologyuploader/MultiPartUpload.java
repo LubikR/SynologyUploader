@@ -13,9 +13,9 @@ import java.util.UUID;
 
 public class MultiPartUpload {
 
-    private String DELIMITER_SHORT = UUID.randomUUID().toString();
-    private String DELIMITER = "--" + DELIMITER_SHORT;
-    private static final String CRLF = "\r\n";
+    private final String DELIMITER_SHORT = UUID.randomUUID().toString();
+    private final String DELIMITER = "--" + DELIMITER_SHORT;
+    private final String CRLF = "\r\n";
     private HttpURLConnection connection;
     private OutputStream outputStream;
     private PrintWriter writer;
@@ -37,19 +37,24 @@ public class MultiPartUpload {
     }
 
     public void addFormField (String name, String value) {
-        writer.append(DELIMITER).append(CRLF);
-        writer.append("content-disposition: form-data; name=\"" + name + "\"")
-                .append(CRLF).append(CRLF);
-        writer.append(value).append(CRLF);
+        writer.append(DELIMITER)
+                .append(CRLF)
+                .append("content-disposition: form-data; name=\"" + name + "\"")
+                .append(CRLF)
+                .append(CRLF)
+                .append(value)
+                .append(CRLF);
         writer.flush();
     }
 
     public void addFilePart (String fieldName, FileInputStream uploadFileStream, String fileName) throws IOException {
 
-        writer.append(DELIMITER).append(CRLF);
-        writer.append("content-disposition: form-data; name=\"" + fieldName + "\"; filename=\"" + fileName + "\"")
+        writer.append(DELIMITER).append(CRLF)
+                .append("content-disposition: form-data; name=\"" + fieldName + "\"; filename=\"" + fileName + "\"")
+                .append(CRLF)
+                .append("Content-Type: application/octet-stream")
+                .append(CRLF)
                 .append(CRLF);
-        writer.append("Content-Type: application/octet-stream").append(CRLF).append(CRLF);
         writer.flush();
 
         byte[] buffer = new byte[4096];
@@ -58,10 +63,12 @@ public class MultiPartUpload {
             outputStream.write(buffer, 0, bytesRead);
         }
         outputStream.flush();
-
         uploadFileStream.close();
 
-        writer.append(CRLF).append(DELIMITER).append("--").append(CRLF);
+        writer.append(CRLF)
+                .append(DELIMITER)
+                .append("--")
+                .append(CRLF);
         writer.flush();
     }
 
