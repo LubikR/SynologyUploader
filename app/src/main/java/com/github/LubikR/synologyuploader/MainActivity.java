@@ -65,7 +65,7 @@ public class MainActivity extends Activity {
 
         //News not read, show it
         String versionRead = SharedPreferencesManager.read(getString(R.string.VersionRead),null);
-        if (versionRead.equals("1.1")) {
+        if (versionRead == "1.1") {
             Intent intent = new Intent(MainActivity.this, NewsActivity.class);
             startActivity(intent);
         }
@@ -74,7 +74,6 @@ public class MainActivity extends Activity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
-                if (debug) { Logger.info(TAG, "Going to Settings"); };
                 startActivity(intent);
             }
         });
