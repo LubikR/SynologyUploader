@@ -18,6 +18,13 @@
     <string name="VersionRead">VersionRead</string>
     <string name="newsFirstRow">New release is here!</string>
     <string name="news">
+        <b>Version 1.4</b>\n
+        - Workaround for OutOfMemoryException by settings Chunksize = 1MB\n
+        - More logging points if logger is enabled\n
+        \n
+        <b>Version 1.3</b>\n
+        - Hotfix - app crashes during the start\n
+        \n
         <b>Version 1.2</b>\n
         - User can choose if application will log activities in the Settings windows. Log file is saved to the sdcard to file SYNOUPLD.LOG\n
         - Small refactoring\n

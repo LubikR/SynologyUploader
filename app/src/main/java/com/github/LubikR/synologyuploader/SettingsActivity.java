@@ -2,7 +2,6 @@ package com.github.LubikR.synologyuploader;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
@@ -15,7 +14,7 @@ import com.sony.scalar.sysutil.ScalarInput;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class SettingsActivity extends Activity {
+public class SettingsActivity extends BaseActivity {
 
     private final String TAG = "SettingsActivity";
     private boolean isOK = false;
@@ -153,22 +152,5 @@ public class SettingsActivity extends Activity {
                 if (isOK) saveButton.setText("Save and Exit");
             }
         });
-    }
-
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        switch (event.getScanCode()) {
-            case ScalarInput.ISV_KEY_DELETE:
-            case ScalarInput.ISV_KEY_SK2:
-            case ScalarInput.ISV_KEY_MENU:
-                return onDeleteKeyUp();
-            default:
-                return super.onKeyDown(keyCode, event);
-        }
-    }
-
-    protected boolean onDeleteKeyUp() {
-        onBackPressed();
-        return true;
     }
 }

@@ -29,7 +29,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class MainActivity extends Activity {
+public class MainActivity extends BaseActivity {
 
     private final String TAG = "MainActivity";
 
@@ -262,30 +262,5 @@ public class MainActivity extends Activity {
             btnUpload.setEnabled(true);
             btnSettings.setEnabled(true);
         }
-    }
-
-    protected void setAutoPowerOffMode(boolean enable) {
-        String mode = enable ? "APO/NORMAL" : "APO/NO";// or "APO/SPECIAL" ?
-        Intent intent = new Intent();
-        intent.setAction("com.android.server.DAConnectionManagerService.apo");
-        intent.putExtra("apo_info", mode);
-        sendBroadcast(intent);
-    }
-
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        switch (event.getScanCode()) {
-            case ScalarInput.ISV_KEY_DELETE:
-            case ScalarInput.ISV_KEY_SK2:
-            case ScalarInput.ISV_KEY_MENU:
-                return onDeleteKeyUp();
-            default:
-                return super.onKeyDown(keyCode, event);
-        }
-    }
-
-    protected boolean onDeleteKeyUp() {
-        onBackPressed();
-        return true;
     }
 }
