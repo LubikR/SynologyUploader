@@ -60,16 +60,6 @@ public class MainActivity extends BaseActivity {
          SharedPreferencesManager.deleteAll();
          **/
 
-        //Check if Connection is already set
-        checkIfAlreadySet();
-
-        //News not read, show it
-        String versionRead = SharedPreferencesManager.read(getString(R.string.VersionRead),null);
-        if (versionRead == "1.1") {
-            Intent intent = new Intent(MainActivity.this, NewsActivity.class);
-            startActivity(intent);
-        }
-
         btnSettings.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -98,7 +88,16 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
+
+        //Check if Connection is already set
         checkIfAlreadySet();
+
+        //News not read, show it
+        String versionRead = SharedPreferencesManager.read(getString(R.string.VersionRead),null);
+        if (versionRead == "1.1") {
+            Intent intent = new Intent(MainActivity.this, NewsActivity.class);
+            startActivity(intent);
+        }
     }
 
     public void uploadNowClick(View view) {
