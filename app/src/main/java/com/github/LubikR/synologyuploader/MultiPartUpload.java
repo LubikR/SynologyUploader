@@ -32,6 +32,8 @@ public class MultiPartUpload {
         connection.setDoOutput(true);
         connection.setDoInput(true);
         connection.setRequestProperty("Content-type", "multipart/form-data, boundary=" + DELIMITER_SHORT);
+        connection.setChunkedStreamingMode(1024 * 1024);
+        connection.setRequestProperty("Transfer-Encoding","chunked");
         outputStream = connection.getOutputStream();
         writer = new PrintWriter(new OutputStreamWriter(outputStream, charset), true);
     }
