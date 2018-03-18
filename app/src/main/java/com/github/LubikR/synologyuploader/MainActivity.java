@@ -22,6 +22,7 @@ import org.apache.http.HttpException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.text.DateFormat;
@@ -122,7 +123,7 @@ public class MainActivity extends BaseActivity {
         @Override
         protected Integer doInBackground(Void... voids) {
             int result = 0;
-            int count;
+            int count = 0;
 
             MediaManager mediaManager = MediaManager.create(getApplicationContext());
             Cursor cursor = mediaManager.queryImages();
@@ -176,10 +177,17 @@ public class MainActivity extends BaseActivity {
                         i++;
                         ImageInfo info = mediaManager.getImageInfo(cursor);
                         String filename = info.getFilename();
+                        final File file = new File(filename);
                         Date date = info.getDate();
 
                         publishProgress("Uploading " + i + " / " + count);
-                        progressBar.setVisibility(ProgressBar.VISIBLE);
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                progressBar.setVisibility(ProgressBar.VISIBLE);
+                                progressBar.setMax((int)file.length());
+                            }
+                        });
 
                         MultiPartUpload multipart = new MultiPartUpload(address +
                                 SynologyAPI.uploadAPI, "UTF-8", sid);
@@ -211,9 +219,16 @@ public class MainActivity extends BaseActivity {
                             if (debug) { Logger.info(TAG, "Error during upload: " + errorCode); };
                             throw new HttpException(errorCode);
                         }
+
+                        //Reset progress bar
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                progressBar.setProgress(0);
+                            }
+                        });
                     }
                     cursor.close();
-                    progressBar.setVisibility(ProgressBar.INVISIBLE);
 
                     // Do logout
                     jsonObject = SynologyAPI.logout(address, sid, maxVersionAuth);
@@ -265,6 +280,7 @@ public class MainActivity extends BaseActivity {
             }
             btnUpload.setEnabled(true);
             btnSettings.setEnabled(true);
+            progressBar.setVisibility(ProgressBar.INVISIBLE);
         }
     }
 }

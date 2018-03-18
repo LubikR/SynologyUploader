@@ -1,13 +1,9 @@
 package com.github.LubikR.synologyuploader;
 
-import android.Manifest;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.widget.ProgressBar;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -77,7 +73,7 @@ public class MultiPartUpload {
             outputStream.write(buffer, 0, bytesRead);
 
             i++;
-            intent.putExtra("data", i);
+            intent.putExtra("data", i * 4096);
             context.sendBroadcast(intent);
         }
         outputStream.flush();
