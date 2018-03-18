@@ -1,6 +1,5 @@
 package com.github.LubikR.synologyuploader;
 
-import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -22,9 +21,9 @@ import org.apache.http.HttpException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -115,7 +114,7 @@ public class MainActivity extends BaseActivity {
         @Override
         protected void onPreExecute() {
             setAutoPowerOffMode(false);
-            publishProgress("Connecting to the server...");
+            publishProgress(getString(R.string.connecting));
             btnSettings.setEnabled(false);
             btnUpload.setEnabled(false);
         }
@@ -129,18 +128,17 @@ public class MainActivity extends BaseActivity {
             Cursor cursor = mediaManager.queryImages();
 
             if (cursor == null) {
-                publishProgress("Not possible to get images. Probably not supported device.");
+                publishProgress(getString(R.string.notSupportedDevice));
                 if (debug) {
                     Logger.error(TAG, "Not possible to get images. Probably not supported device");
                 }
-                ;
                 result = -1;
             } else if ((count = cursor.getCount()) == 0) {
-                publishProgress("Nothing to upload.");
+                publishProgress(getString(R.string.nothingToUpload));
                 result = -1;
                 if (debug) {
                     Logger.error(TAG, "Nothing to upload");
-                } ;
+                }
             } else {
                 try {
                     int i = 0;
@@ -148,7 +146,7 @@ public class MainActivity extends BaseActivity {
                     //Get URL
                     if (debug) {
                         Logger.info(TAG, "Getting address : " +
-                                ip.replaceAll(".", "*") + ":" + port + " https:" + https); } ;
+                                ip.replaceAll(".", "*") + ":" + port + " https:" + https); }
                     String address = SynologyAPI.getAddress(ip, port, https);
 
                     //Check Synology API and retrieve maxVersion
@@ -159,7 +157,6 @@ public class MainActivity extends BaseActivity {
                         Logger.info(TAG, "Got maxVersions: SYNO.API.Auth=" + maxVersionAuth +
                                 ", SYNO.FileStation.Upload=" + maxVersionUpload);
                     }
-                    ;
 
                     // Login to Synology
                     jsonObject = SynologyAPI.login(address, user, passwd, maxVersionAuth);
@@ -167,7 +164,6 @@ public class MainActivity extends BaseActivity {
                     if (debug) {
                         Logger.info(TAG, "Logged-in OK, sid=" + sid);
                     }
-                    ;
 
                     //upload images
                     String model = DeviceInfo.getInstance().getModel();
@@ -175,17 +171,25 @@ public class MainActivity extends BaseActivity {
 
                     while (cursor.moveToNext()) {
                         i++;
-                        ImageInfo info = mediaManager.getImageInfo(cursor);
+                        final ImageInfo info = mediaManager.getImageInfo(cursor);
                         String filename = info.getFilename();
-                        final File file = new File(filename);
                         Date date = info.getDate();
 
                         publishProgress("Uploading " + i + " / " + count);
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
+                                int i = 0;
                                 progressBar.setVisibility(ProgressBar.VISIBLE);
-                                progressBar.setMax((int)file.length());
+                                try {
+                                    FileChannel fc = ((FileInputStream) info.getFullImage()).getChannel();
+                                    i = (int) fc.size();
+                                    fc.close();
+                                }
+                                catch (IOException e) {
+                                    //TODO : Do something with exeption
+                                }
+                                progressBar.setMax(i);
                             }
                         });
 
@@ -194,14 +198,14 @@ public class MainActivity extends BaseActivity {
 
                         multipart.addFormField("api", "SYNO.FileStation.Upload");
                         multipart.addFormField("version", maxVersionUpload);
-                        if (debug) { Logger.info(TAG, "UploadVersion=" + maxVersionUpload); };
+                        if (debug) { Logger.info(TAG, "UploadVersion=" + maxVersionUpload); }
                         multipart.addFormField("method", "upload");
                         multipart.addFormField("path", "/" + directory + "/" + model + "/" + formatter.format(date));
                         if (debug) { Logger.info(TAG, "Path=" + "/" + directory + "/" + model + "/" +
-                                formatter.format(date)); };
+                                formatter.format(date)); }
                         multipart.addFormField("create_parents", "true");
                         multipart.addFilePart("file", (FileInputStream) info.getFullImage(), filename, getApplicationContext());
-                        if (debug) { Logger.info(TAG, "Filename=" + filename); };
+                        if (debug) { Logger.info(TAG, "Filename=" + filename); }
 
                         String json2 = new String(multipart.finish());
                         String uploadResult = new JSONObject(json2).getString("success");
@@ -216,7 +220,7 @@ public class MainActivity extends BaseActivity {
                             }
                         } else {
                             String errorCode = new JSONObject(json2).getJSONObject("error").getString("code");
-                            if (debug) { Logger.info(TAG, "Error during upload: " + errorCode); };
+                            if (debug) { Logger.info(TAG, "Error during upload: " + errorCode); }
                             throw new HttpException(errorCode);
                         }
 
@@ -236,29 +240,25 @@ public class MainActivity extends BaseActivity {
                 } catch (Exception e) {
                     result = -1;
                     if (e instanceof IOException) {
-                        publishProgress("Error - " + e.getMessage());
+                        publishProgress(getString(R.string.commonError) + e.getMessage());
                         if (debug) {
                             Logger.error(TAG, "IOException - " + e.getMessage());
                         }
-                        ;
                     } else if (e instanceof JSONException) {
                         publishProgress("JSON error - " + e.getMessage());
                         if (debug) {
                             Logger.error(TAG, "JSONException - " + e.getMessage());
                         }
-                        ;
                     } else if (e instanceof HttpException) {
                         publishProgress("Connection error : " + e.getMessage());
                         if (debug) {
                             Logger.error(TAG, "HttpException - " + e.toString());
                         }
-                        ;
                     } else {
                         publishProgress("Something wrong with error : " + e.getMessage());
                         if (debug) {
                             Logger.error(TAG, "AnotherException - " + e.getMessage());
                         }
-                        ;
                     }
                 }
             }
@@ -268,15 +268,15 @@ public class MainActivity extends BaseActivity {
         @Override
         protected void onProgressUpdate(String... strings) {
             statusTextView.setText(strings[0]);
-            if (debug) { Logger.info(TAG, "Publish progress: " + strings[0]); };
+            if (debug) { Logger.info(TAG, "Publish progress: " + strings[0]); }
         }
 
         @Override
         protected void onPostExecute(Integer result) {
             setAutoPowerOffMode(true);
             if (result == 0) {
-                statusTextView.setText("Everything uploaded OK!");
-                if (debug) { Logger.info(TAG, "Everything uploaded OK"); };
+                statusTextView.setText(getString(R.string.uploadOK));
+                if (debug) { Logger.info(TAG, "Everything uploaded OK"); }
             }
             btnUpload.setEnabled(true);
             btnSettings.setEnabled(true);

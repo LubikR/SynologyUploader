@@ -14,6 +14,11 @@
     <string name="chckBoxDelete">Delete photos after successfull upload</string>
     <string name="chkkBoxLog">Debug - Create log file</string>
     <string name="connectionCheckOK">Everyting OK! Push the button again to save it.</string>
+    <string name="connecting">Connecting to the server...</string>
+    <string name="notSupportedDevice">Not possible to get images. Probably not supported device.</string>
+    <string name="nothingToUpload">Nothing to upload.</string>
+    <string name="uploadOK">"Everything uploaded OK!"</string>
+    <string name="commonError">Error - </string>
     <string name="versionReadTag">VersionRead</string>
     <string name="newsFirstRow">New release is here!</string>
     <string name="news">
