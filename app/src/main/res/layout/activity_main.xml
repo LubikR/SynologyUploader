@@ -29,10 +29,20 @@
         android:id="@+id/textviewStatus"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
         android:gravity="center_horizontal"
+        android:paddingTop="10dp"
         android:text="@string/counter"
         android:textSize="18sp"
         android:visibility="visible" />
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
+        android:paddingTop="10dp"
+        android:visibility="invisible" />
 
 </LinearLayout>

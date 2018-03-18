@@ -1,13 +1,16 @@
 package com.github.LubikR.synologyuploader;
 
+import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.github.ma1co.openmemories.framework.DeviceInfo;
@@ -35,6 +38,7 @@ public class MainActivity extends BaseActivity {
     Button btnSettings;
     Button btnUpload;
     TextView statusTextView;
+    ProgressBar progressBar;
 
     String ip, port, user, passwd;
     Boolean https, debug;
@@ -49,6 +53,7 @@ public class MainActivity extends BaseActivity {
         btnSettings = (Button) findViewById(R.id.Settings);
         btnUpload = (Button) findViewById(R.id.Upload_Now);
         statusTextView = (TextView) findViewById(R.id.textviewStatus);
+        progressBar = (ProgressBar) findViewById(R.id.progressBar);
 
         SharedPreferencesManager.init(getApplicationContext());
 
@@ -66,25 +71,11 @@ public class MainActivity extends BaseActivity {
         });
     }
 
-        private void checkIfAlreadySet() {
-            if ((SharedPreferencesManager.read(getString(R.string.port), null)) == null) {
-             btnUpload.setEnabled(false);
-            } else {
-                ip = SharedPreferencesManager.read(getString(R.string.address), null);
-                port = SharedPreferencesManager.read(getString(R.string.port), null);
-                https = SharedPreferencesManager.readBoolean(getString(R.string.chckBoxUseHttps), false);
-                user = SharedPreferencesManager.read(getString(R.string.user), null);
-                passwd = SharedPreferencesManager.read(getString(R.string.passwd), null);
-                deleteAfterUpload = SharedPreferencesManager.readBoolean(getString(R.string.chckBoxDelete), false);
-                debug = SharedPreferencesManager.readBoolean(getString(R.string.chkkBoxLog), false);
-
-                btnUpload.setEnabled(true);
-            }
-        }
-
     @Override
     protected void onResume() {
         super.onResume();
+
+        registerReceiver(new Broadcasts(), new IntentFilter("com.github.LubikR.synologyuploader.PROGRESS_BAR_NOTIFICATION"));
 
         //Check if Connection is already set
         checkIfAlreadySet();
@@ -94,6 +85,21 @@ public class MainActivity extends BaseActivity {
         if (versionRead == null || !versionRead.equals("1.4")) {
             Intent intent = new Intent(MainActivity.this, NewsActivity.class);
             startActivity(intent);
+        }
+    }
+
+    private void checkIfAlreadySet() {
+        if ((SharedPreferencesManager.read(getString(R.string.port), null)) == null) {
+            btnUpload.setEnabled(false);
+        } else {
+            ip = SharedPreferencesManager.read(getString(R.string.address), null);
+            port = SharedPreferencesManager.read(getString(R.string.port), null);
+            https = SharedPreferencesManager.readBoolean(getString(R.string.chckBoxUseHttps), false);
+            user = SharedPreferencesManager.read(getString(R.string.user), null);
+            passwd = SharedPreferencesManager.read(getString(R.string.passwd), null);
+            deleteAfterUpload = SharedPreferencesManager.readBoolean(getString(R.string.chckBoxDelete), false);
+            debug = SharedPreferencesManager.readBoolean(getString(R.string.chkkBoxLog), false);
+            btnUpload.setEnabled(true);
         }
     }
 
@@ -173,6 +179,7 @@ public class MainActivity extends BaseActivity {
                         Date date = info.getDate();
 
                         publishProgress("Uploading " + i + " / " + count);
+                        progressBar.setVisibility(ProgressBar.VISIBLE);
 
                         MultiPartUpload multipart = new MultiPartUpload(address +
                                 SynologyAPI.uploadAPI, "UTF-8", sid);
@@ -185,7 +192,7 @@ public class MainActivity extends BaseActivity {
                         if (debug) { Logger.info(TAG, "Path=" + "/" + directory + "/" + model + "/" +
                                 formatter.format(date)); };
                         multipart.addFormField("create_parents", "true");
-                        multipart.addFilePart("file", (FileInputStream) info.getFullImage(), filename);
+                        multipart.addFilePart("file", (FileInputStream) info.getFullImage(), filename, getApplicationContext());
                         if (debug) { Logger.info(TAG, "Filename=" + filename); };
 
                         String json2 = new String(multipart.finish());
@@ -206,6 +213,7 @@ public class MainActivity extends BaseActivity {
                         }
                     }
                     cursor.close();
+                    progressBar.setVisibility(ProgressBar.INVISIBLE);
 
                     // Do logout
                     jsonObject = SynologyAPI.logout(address, sid, maxVersionAuth);

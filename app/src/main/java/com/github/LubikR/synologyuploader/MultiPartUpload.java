@@ -1,6 +1,13 @@
 package com.github.LubikR.synologyuploader;
 
+import android.Manifest;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.widget.ProgressBar;
+
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,7 +27,7 @@ public class MultiPartUpload {
     private OutputStream outputStream;
     private PrintWriter writer;
     String charset;
-
+    Intent intent = new Intent();
 
     public MultiPartUpload (String requestedUrl, String charset, String sid) throws IOException{
         this.charset = charset;
@@ -38,6 +45,8 @@ public class MultiPartUpload {
 
         outputStream = connection.getOutputStream();
         writer = new PrintWriter(new OutputStreamWriter(outputStream, charset), true);
+
+        intent.setAction("com.github.LubikR.synologyuploader.PROGRESS_BAR_NOTIFICATION");
     }
 
     public void addFormField (String name, String value) {
@@ -51,7 +60,7 @@ public class MultiPartUpload {
         writer.flush();
     }
 
-    public void addFilePart (String fieldName, FileInputStream uploadFileStream, String fileName) throws IOException {
+    public void addFilePart (String fieldName, FileInputStream uploadFileStream, String fileName, Context context) throws IOException {
 
         writer.append(DELIMITER).append(CRLF)
                 .append("content-disposition: form-data; name=\"" + fieldName + "\"; filename=\"" + fileName + "\"")
@@ -63,8 +72,13 @@ public class MultiPartUpload {
 
         byte[] buffer = new byte[4096];
         int bytesRead = -1;
+        int i = 1;
         while ((bytesRead = uploadFileStream.read(buffer)) != -1) {
             outputStream.write(buffer, 0, bytesRead);
+
+            i++;
+            intent.putExtra("data", i);
+            context.sendBroadcast(intent);
         }
         outputStream.flush();
         uploadFileStream.close();
