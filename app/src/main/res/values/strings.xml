@@ -21,7 +21,12 @@
     <string name="commonError">Error - </string>
     <string name="versionReadTag">VersionRead</string>
     <string name="newsFirstRow">New release is here!</string>
+    <string name="tagLastVersion">1.5</string>
     <string name="news">
+        <b>Version 1.5</b>\n
+        - Wifi is connected when needed\n
+        - Progress bar of uploads added\n
+        \n
         <b>Version 1.4</b>\n
         - Fix - solving OutOfMemoryException when upload starts by settings Chunksize = 1MB\n
         - More logging points if logger is enabled\n

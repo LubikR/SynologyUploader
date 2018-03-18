@@ -17,7 +17,7 @@ public class NewsActivity extends BaseActivity {
         setContentView(R.layout.news);
 
         news = (TextView) findViewById(R.id.textViewNews);
-        SharedPreferencesManager.write(getString(R.string.versionReadTag), "1.4");
+        SharedPreferencesManager.write(getString(R.string.versionReadTag), getString(R.string.tagLastVersion));
     }
 
     @Override

@@ -82,7 +82,7 @@ public class MainActivity extends BaseActivity {
 
         //News not read, show it
         String versionRead = SharedPreferencesManager.read(getString(R.string.versionReadTag),null);
-        if (versionRead == null || !versionRead.equals("1.4")) {
+        if (versionRead == null || !versionRead.equals(getString(R.string.tagLastVersion))) {
             Intent intent = new Intent(MainActivity.this, NewsActivity.class);
             startActivity(intent);
         }
