@@ -1,12 +1,8 @@
 package com.github.LubikR.synologyuploader;
 
 
-import android.app.Activity;
 import android.os.Bundle;
-import android.view.KeyEvent;
 import android.widget.TextView;
-
-import com.sony.scalar.sysutil.ScalarInput;
 
 public class NewsActivity extends BaseActivity {
 
@@ -18,6 +14,6 @@ public class NewsActivity extends BaseActivity {
         setContentView(R.layout.news);
 
         news = (TextView) findViewById(R.id.textViewNews);
-        SharedPreferencesManager.write(getString(R.string.VersionRead), "1.2");
+        SharedPreferencesManager.write(getString(R.string.versionReadTag), "1.4");
     }
 }

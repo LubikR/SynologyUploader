@@ -1,6 +1,5 @@
 package com.github.LubikR.synologyuploader;
 
-import android.content.Context;
 import android.os.Environment;
 import android.util.Log;
 
@@ -23,7 +22,6 @@ public class Logger {
             writer.newLine();
             writer.close();
         } catch (IOException e) {
-            //TODO : Do something with exception
             Log.d("Logger", "log: " + e.getMessage());
         }
     }

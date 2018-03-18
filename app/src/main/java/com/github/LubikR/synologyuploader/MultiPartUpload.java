@@ -31,9 +31,11 @@ public class MultiPartUpload {
         connection.setRequestProperty("Cookie", sidCookie);
         connection.setDoOutput(true);
         connection.setDoInput(true);
+        // 1MB as fixed chunk size
         connection.setRequestProperty("Content-type", "multipart/form-data, boundary=" + DELIMITER_SHORT);
         connection.setChunkedStreamingMode(1024 * 1024);
         connection.setRequestProperty("Transfer-Encoding","chunked");
+
         outputStream = connection.getOutputStream();
         writer = new PrintWriter(new OutputStreamWriter(outputStream, charset), true);
     }

@@ -1,14 +1,11 @@
 package com.github.LubikR.synologyuploader;
 
-import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -16,7 +13,6 @@ import android.widget.TextView;
 import com.github.ma1co.openmemories.framework.DeviceInfo;
 import com.github.ma1co.openmemories.framework.ImageInfo;
 import com.github.ma1co.openmemories.framework.MediaManager;
-import com.sony.scalar.sysutil.ScalarInput;
 import com.sony.scalar.provider.AvindexStore;
 
 import org.apache.http.HttpException;
@@ -93,8 +89,8 @@ public class MainActivity extends BaseActivity {
         checkIfAlreadySet();
 
         //News not read, show it
-        String versionRead = SharedPreferencesManager.read(getString(R.string.VersionRead),null);
-        if (versionRead == "1.1") {
+        String versionRead = SharedPreferencesManager.read(getString(R.string.versionReadTag),null);
+        if (versionRead != "1.4") {
             Intent intent = new Intent(MainActivity.this, NewsActivity.class);
             startActivity(intent);
         }

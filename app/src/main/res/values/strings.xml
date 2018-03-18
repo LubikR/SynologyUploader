@@ -14,16 +14,15 @@
     <string name="chckBoxDelete">Delete photos after successfull upload</string>
     <string name="chkkBoxLog">Debug - Create log file</string>
     <string name="connectionCheckOK">Everyting OK! Push the button again to save it.</string>
-
-    <string name="VersionRead">VersionRead</string>
+    <string name="versionReadTag">VersionRead</string>
     <string name="newsFirstRow">New release is here!</string>
     <string name="news">
         <b>Version 1.4</b>\n
-        - Workaround for OutOfMemoryException by settings Chunksize = 1MB\n
+        - Fix - solving OutOfMemoryException when upload starts by settings Chunksize = 1MB\n
         - More logging points if logger is enabled\n
         \n
         <b>Version 1.3</b>\n
-        - Hotfix - app crashes during the start\n
+        - Fix - app crashes during the start\n
         \n
         <b>Version 1.2</b>\n
         - User can choose if application will log activities in the Settings windows. Log file is saved to the sdcard to file SYNOUPLD.LOG\n
