@@ -24,12 +24,13 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 public class MainActivity extends BaseActivity {
 
     private final String TAG = "MainActivity";
 
-    DateFormat formatter = new SimpleDateFormat("ddMMyyyy");
+    DateFormat formatter = new SimpleDateFormat("ddMMyyyy", Locale.US);
 
     Button btnSettings;
     Button btnUpload;
@@ -51,10 +52,10 @@ public class MainActivity extends BaseActivity {
 
         SharedPreferencesManager.init(getApplicationContext());
 
-        /**
+        /*
          For testing purpose > delete sharedpreferences
          SharedPreferencesManager.deleteAll();
-         **/
+         */
 
         btnSettings.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -115,7 +116,7 @@ public class MainActivity extends BaseActivity {
         @Override
         protected Integer doInBackground(Void... voids) {
             int result = 0;
-            int count = 0;
+            int count;
 
             MediaManager mediaManager = MediaManager.create(getApplicationContext());
             Cursor cursor = mediaManager.queryImages();
