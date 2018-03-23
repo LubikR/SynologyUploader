@@ -8,7 +8,6 @@ import android.net.ConnectivityManager;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
-import android.os.Environment;
 
 public class WifiActivity extends BaseActivity {
 
@@ -68,9 +67,9 @@ public class WifiActivity extends BaseActivity {
         unregisterReceiver(receiver);
     }
 
-    private void onWifiStateChanged() {
+    public void onWifiStateChanged() {
         if (getWifiState() != WifiState.CONNECTED) {
-            // TODO tady jsem skoncil
+            startActivity(new Intent(this, ConnectActivity.class));
         }
     }
 

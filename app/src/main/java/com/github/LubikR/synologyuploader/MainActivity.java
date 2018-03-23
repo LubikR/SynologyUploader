@@ -75,7 +75,8 @@ public class MainActivity extends BaseActivity {
     protected void onResume() {
         super.onResume();
 
-        registerReceiver(new Broadcasts(), new IntentFilter("com.github.LubikR.synologyuploader.PROGRESS_BAR_NOTIFICATION"));
+        registerReceiver(new Broadcasts(),
+                new IntentFilter("com.github.LubikR.synologyuploader.PROGRESS_BAR_NOTIFICATION"));
 
         //Check if Connection is already set
         checkIfAlreadySet();
