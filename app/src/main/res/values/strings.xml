@@ -22,6 +22,7 @@
     <string name="versionReadTag">VersionRead</string>
     <string name="newsFirstRow">New release is here!</string>
     <string name="tagLastVersion">1.5</string>
+    <string name="SaveAndExit">Save and Exit</string>
     <string name="news">
         <b>Version 1.5</b>\n
         - Wifi is connected when needed\n
