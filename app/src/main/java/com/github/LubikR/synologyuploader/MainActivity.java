@@ -29,7 +29,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-public class MainActivity extends BaseActivity {
+public class MainActivity extends WifiActivity {
 
     private final String TAG = "MainActivity";
 
@@ -65,6 +65,7 @@ public class MainActivity extends BaseActivity {
         btnSettings.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                setKeepWifiOn();
                 Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
                 startActivity(intent);
             }
@@ -75,8 +76,8 @@ public class MainActivity extends BaseActivity {
     protected void onResume() {
         super.onResume();
 
-        registerReceiver(new Broadcasts(),
-                new IntentFilter("com.github.LubikR.synologyuploader.PROGRESS_BAR_NOTIFICATION"));
+        //ProgressBar Broadcast
+        registerReceiver(new Broadcasts(), new IntentFilter("com.github.LubikR.synologyuploader.PROGRESS_BAR_NOTIFICATION"));
 
         //Check if Connection is already set
         checkIfAlreadySet();
@@ -236,7 +237,7 @@ public class MainActivity extends BaseActivity {
                     cursor.close();
 
                     // Do logout
-                    jsonObject = SynologyAPI.logout(address, sid, maxVersionAuth);
+                    SynologyAPI.logout(address, sid, maxVersionAuth);
 
                 } catch (Exception e) {
                     result = -1;

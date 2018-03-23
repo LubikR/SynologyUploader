@@ -65,6 +65,10 @@ public class WifiActivity extends BaseActivity {
     protected void onPause() {
         super.onPause();
         unregisterReceiver(receiver);
+        if (!keepWifiOn) {
+            setWifiEnabled(false);
+        }
+        keepWifiOn = false;
     }
 
     public void onWifiStateChanged() {
@@ -99,5 +103,9 @@ public class WifiActivity extends BaseActivity {
 
     public void setWifiEnabled(boolean enabled) {
         wifiManager.setWifiEnabled(enabled);
+    }
+
+    public void setKeepWifiOn() {
+        keepWifiOn = true;
     }
 }

@@ -2,7 +2,6 @@ package com.github.LubikR.synologyuploader;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.os.Bundle;
 import android.view.KeyEvent;
 
 import com.sony.scalar.sysutil.ScalarInput;

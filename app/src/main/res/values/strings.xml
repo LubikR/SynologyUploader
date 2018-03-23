@@ -21,6 +21,7 @@
     <string name="commonError">Error - </string>
     <string name="versionReadTag">VersionRead</string>
     <string name="newsFirstRow">New release is here!</string>
+    <string name="SaveAndExit">Save and Exit</string>
     <string name="news">
         <b>Version 1.4</b>\n
         - Fix - solving OutOfMemoryException when upload starts by settings Chunksize = 1MB\n
