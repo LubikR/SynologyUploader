@@ -25,6 +25,8 @@ public class ConnectActivity extends WifiActivity {
     public void onWifiStateChanged() {
         WifiState state =  getWifiState();
         textView.setText(state.toString());
+
+
         if (state == WifiState.CONNECTED) {
             setKeepWifiOn();
             finish();

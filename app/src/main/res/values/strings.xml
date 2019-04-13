@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">SynologyUploader</string>
     <string name="buttonSettings">Settings</string>
-    <string name="buttonGo">Upload Now!</string>
+    <string name="buttonGo">Upload All!</string>
     <string name="counter">Ready...</string>
     <string name="address">Address or IP</string>
     <string name="user">User</string>
@@ -11,9 +11,9 @@
     <string name="settingViewDirectory">Directory</string>
     <string name="chckBoxUseHttps">Https</string>
     <string name="port">Port</string>
-    <string name="chckBoxDelete">Delete photos after successfull upload</string>
+    <string name="chckBoxDelete">Delete photos after successful upload</string>
     <string name="chkkBoxLog">Debug - Create log file</string>
-    <string name="connectionCheckOK">Everyting OK! Push the button again to save it.</string>
+    <string name="connectionCheckOK">Everything OK! Push the button again to save it.</string>
     <string name="connecting">Connecting to the server...</string>
     <string name="notSupportedDevice">Not possible to get images. Probably not supported device.</string>
     <string name="nothingToUpload">Nothing to upload.</string>
@@ -21,9 +21,12 @@
     <string name="commonError">Error - </string>
     <string name="versionReadTag">VersionRead</string>
     <string name="newsFirstRow">New release is here!</string>
-    <string name="tagLastVersion">1.5</string>
+    <string name="tagLastVersion">1.6</string>
     <string name="SaveAndExit">Save and Exit</string>
     <string name="news">
+        <b>Version 1.6</b>\n
+        - Added option for image selection\n
+        \n
         <b>Version 1.5</b>\n
         - Wifi is connected automatically\n
         - Uploading progress bar added\n
@@ -47,4 +50,7 @@
         <b>Version 1.0</b>\n
         - Initial release
     </string>
+    <string name="buttonGoselection">Upload Selected</string>
+    <string name="buttonSelectimages">Select Images</string>
+    <string name="title_activity_image_select">ImageSelect</string>
 </resources>

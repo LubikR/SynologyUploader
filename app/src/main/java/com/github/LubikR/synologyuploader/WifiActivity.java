@@ -74,10 +74,13 @@ public class WifiActivity extends BaseActivity {
     public void onWifiStateChanged() {
         if (getWifiState() != WifiState.CONNECTED) {
             startActivity(new Intent(this, ConnectActivity.class));
+
+
         }
     }
 
     public WifiState getWifiState() {
+
         switch (wifiManager.getWifiState()) {
             case WifiManager.WIFI_STATE_ENABLED:
                 if (connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).isConnected()) {
@@ -99,6 +102,7 @@ public class WifiActivity extends BaseActivity {
             default:
                 return WifiState.DISABLED;
         }
+
     }
 
     public void setWifiEnabled(boolean enabled) {
@@ -108,4 +112,5 @@ public class WifiActivity extends BaseActivity {
     public void setKeepWifiOn() {
         keepWifiOn = true;
     }
+
 }

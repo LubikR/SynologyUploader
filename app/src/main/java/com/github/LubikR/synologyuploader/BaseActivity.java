@@ -4,9 +4,13 @@ import android.app.Activity;
 import android.content.Intent;
 import android.view.KeyEvent;
 
+import com.github.ma1co.openmemories.framework.DisplayManager;
 import com.sony.scalar.sysutil.ScalarInput;
 
 public class BaseActivity extends Activity {
+    public static final String NOTIFICATION_DISPLAY_CHANGED = "NOTIFICATION_DISPLAY_CHANGED";
+
+
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
@@ -32,4 +36,6 @@ public class BaseActivity extends Activity {
         intent.putExtra("apo_info", mode);
         sendBroadcast(intent);
     }
+
+
 }
