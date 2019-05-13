@@ -1,6 +1,10 @@
 # SynologyUploader
 SynologyUploader is app for Sony cameras using [OpenMemories: Framework](https://github.com/ma1co/OpenMemories-Framework). This application uses official [Synology API](https://global.download.synology.com/download/Document/DeveloperGuide/Synology_File_Station_API_Guide.pdf)
 
+## My camera (DSC-HX60V) is currently not able to connect to any wifi probably due to HW problem. During the searching for a wifi camera returns "System error" or simply freezes :worried: but other thinks like taking photos, movies, etc. works well. Due to this I am not able to debug and test new releases so I have to stop working on this project.
+
+Last but not released version is attached in https://github.com/LubikR/SynologyUploader/issues/5, feel free to download and test it.
+
 ### Prerequisites
 Application assumed that the wifi connection is established, if not error message will be shown to the user during the connection check to the Synology server.
 
