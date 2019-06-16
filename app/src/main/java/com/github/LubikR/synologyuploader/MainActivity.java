@@ -36,6 +36,8 @@ public class MainActivity extends WifiActivity {
     DateFormat formatter = new SimpleDateFormat("ddMMyyyy", Locale.US);
 
     Button btnSettings;
+    Button btnSelectimages;
+    Button btnUploadSelected;
     Button btnUpload;
     TextView statusTextView;
     ProgressBar progressBar;
@@ -51,6 +53,8 @@ public class MainActivity extends WifiActivity {
         setContentView(R.layout.activity_main);
 
         btnSettings = (Button) findViewById(R.id.Settings);
+        btnSelectimages = (Button) findViewById(R.id.btnSelectimages);
+        btnUploadSelected = (Button) findViewById(R.id.btnUploadselected);
         btnUpload = (Button) findViewById(R.id.Upload_Now);
         statusTextView = (TextView) findViewById(R.id.textviewStatus);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
@@ -67,6 +71,15 @@ public class MainActivity extends WifiActivity {
             public void onClick(View view) {
                 setKeepWifiOn();
                 Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        btnSelectimages.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                setKeepWifiOn();
+                Intent intent = new Intent(MainActivity.this, SelectionActivity.class);
                 startActivity(intent);
             }
         });
@@ -93,6 +106,7 @@ public class MainActivity extends WifiActivity {
     private void checkIfAlreadySet() {
         if ((SharedPreferencesManager.read(getString(R.string.port), null)) == null) {
             btnUpload.setEnabled(false);
+            btnUploadSelected.setEnabled(false);
         } else {
             ip = SharedPreferencesManager.read(getString(R.string.address), null);
             port = SharedPreferencesManager.read(getString(R.string.port), null);
@@ -102,16 +116,27 @@ public class MainActivity extends WifiActivity {
             deleteAfterUpload = SharedPreferencesManager.readBoolean(getString(R.string.chckBoxDelete), false);
             debug = SharedPreferencesManager.readBoolean(getString(R.string.chkkBoxLog), false);
             btnUpload.setEnabled(true);
+            if (SelectedImages.selectedimages.isEmpty()){
+                btnUploadSelected.setEnabled(false);
+            }
+            else
+                btnUploadSelected.setEnabled(true);
         }
     }
 
+    public void uploadSelectedClick(View view) {
+        UploadPictures uploadPictures = new UploadPictures();
+        uploadPictures.execute(true);
+    }
+
+
     public void uploadNowClick(View view) {
         UploadPictures uploadPictures = new UploadPictures();
-        uploadPictures.execute();
+        uploadPictures.execute(false);
     }
 
     //uploading pictures by Multipart class
-    class UploadPictures extends AsyncTask<Void, String, Integer> {
+    class UploadPictures extends AsyncTask<Boolean, String, Integer> {
 
         @Override
         protected void onPreExecute() {
@@ -119,12 +144,15 @@ public class MainActivity extends WifiActivity {
             publishProgress(getString(R.string.connecting));
             btnSettings.setEnabled(false);
             btnUpload.setEnabled(false);
+            btnSelectimages.setEnabled(false);
+            btnUploadSelected.setEnabled(false);
         }
 
         @Override
-        protected Integer doInBackground(Void... voids) {
+        protected Integer doInBackground(Boolean... selectedOnly) {
             int result = 0;
             int count = 0;
+            boolean flaggedForUpload = false;
 
             MediaManager mediaManager = MediaManager.create(getApplicationContext());
             Cursor cursor = mediaManager.queryImages();
@@ -171,68 +199,98 @@ public class MainActivity extends WifiActivity {
                     String model = DeviceInfo.getInstance().getModel();
                     String directory = SharedPreferencesManager.read(getString(R.string.settingViewDirectory), null);
 
+                    if(selectedOnly[0]){
+                        count = SelectedImages.selectedimages.size();
+                    }
+
                     while (cursor.moveToNext()) {
-                        i++;
+
                         final ImageInfo info = mediaManager.getImageInfo(cursor);
                         String filename = info.getFilename();
                         Date date = info.getDate();
-
-                        publishProgress("Uploading " + i + " / " + count);
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                int i = 0;
-                                progressBar.setVisibility(ProgressBar.VISIBLE);
-                                try {
-                                    FileChannel fc = ((FileInputStream) info.getFullImage()).getChannel();
-                                    i = (int) fc.size();
-                                    fc.close();
-                                }
-                                catch (IOException e) {
-                                    //TODO : Do something with exeption
-                                }
-                                progressBar.setMax(i);
-                            }
-                        });
-
-                        MultiPartUpload multipart = new MultiPartUpload(address +
-                                SynologyAPI.uploadAPI, "UTF-8", sid);
-
-                        multipart.addFormField("api", "SYNO.FileStation.Upload");
-                        multipart.addFormField("version", maxVersionUpload);
-                        if (debug) { Logger.info(TAG, "UploadVersion=" + maxVersionUpload); }
-                        multipart.addFormField("method", "upload");
-                        multipart.addFormField("path", "/" + directory + "/" + model + "/" + formatter.format(date));
-                        if (debug) { Logger.info(TAG, "Path=" + "/" + directory + "/" + model + "/" +
-                                formatter.format(date)); }
-                        multipart.addFormField("create_parents", "true");
-                        multipart.addFilePart("file", (FileInputStream) info.getFullImage(), filename, getApplicationContext());
-                        if (debug) { Logger.info(TAG, "Filename=" + filename); }
-
-                        String json2 = new String(multipart.finish());
-                        String uploadResult = new JSONObject(json2).getString("success");
-
-                        if (uploadResult.equals("true")) {
-                            if (deleteAfterUpload) {
-                                // Delete uploaded image
-                                ContentResolver resolver = getApplicationContext().getContentResolver();
-                                Uri uri = mediaManager.getImageContentUri();
-                                long id = mediaManager.getImageId(cursor);
-                                AvindexStore.Images.Media.deleteImage(resolver, uri, id);
-                            }
-                        } else {
-                            String errorCode = new JSONObject(json2).getJSONObject("error").getString("code");
-                            if (debug) { Logger.info(TAG, "Error during upload: " + errorCode); }
-                            throw new HttpException(errorCode);
+                        Long imageId = info.getImageId();
+                        if (SelectedImages.selectedimages.contains(imageId)){
+                            flaggedForUpload = true;
                         }
 
-                        //Reset progress bar
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                progressBar.setProgress(0);
+
+                        if(!selectedOnly[0] || flaggedForUpload) {
+                            i++;
+                            publishProgress("Uploading " + i + " / " + count);
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    int i = 0;
+                                    progressBar.setVisibility(ProgressBar.VISIBLE);
+                                    try {
+                                        FileChannel fc = ((FileInputStream) info.getFullImage()).getChannel();
+                                        i = (int) fc.size();
+                                        fc.close();
+                                    } catch (IOException e) {
+                                        //TODO : Do something with exeption
+                                    }
+                                    progressBar.setMax(i);
+                                }
+                            });
+
+                            MultiPartUpload multipart = new MultiPartUpload(address +
+                                    SynologyAPI.uploadAPI, "UTF-8", sid);
+
+                            multipart.addFormField("api", "SYNO.FileStation.Upload");
+                            multipart.addFormField("version", maxVersionUpload);
+                            if (debug) {
+                                Logger.info(TAG, "UploadVersion=" + maxVersionUpload);
                             }
-                        });
+                            multipart.addFormField("method", "upload");
+                            multipart.addFormField("path", "/" + directory + "/" + model + "/" + formatter.format(date));
+                            if (debug) {
+                                Logger.info(TAG, "Path=" + "/" + directory + "/" + model + "/" +
+                                        formatter.format(date));
+                            }
+                            multipart.addFormField("create_parents", "true");
+                            multipart.addFilePart("file", (FileInputStream) info.getFullImage(), filename, getApplicationContext());
+                            if (debug) {
+                                Logger.info(TAG, "Filename=" + filename);
+                            }
+
+                            String json2 = new String(multipart.finish());
+                            String uploadResult = new JSONObject(json2).getString("success");
+
+                            if (uploadResult.equals("true")) {
+                                if (deleteAfterUpload) {
+                                    // Delete uploaded image
+                                    ContentResolver resolver = getApplicationContext().getContentResolver();
+                                    Uri uri = mediaManager.getImageContentUri();
+                                    long id = mediaManager.getImageId(cursor);
+                                    AvindexStore.Images.Media.deleteImage(resolver, uri, id);
+                                }
+                                if (flaggedForUpload){
+                                    flaggedForUpload = false;
+                                    SelectedImages.selectedimages.remove(imageId);
+                                }
+                                if( !selectedOnly[0] && deleteAfterUpload){
+                                    SelectedImages.selectedimages.clear();
+                                }
+
+                            } else {
+                                String errorCode = new JSONObject(json2).getJSONObject("error").getString("code");
+                                if (debug) {
+                                    Logger.info(TAG, "Error during upload: " + errorCode);
+                                }
+                                throw new HttpException(errorCode);
+                            }
+
+
+                            //Reset progress bar
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    progressBar.setProgress(0);
+
+                                }
+
+                            });
+                        }    
                     }
                     cursor.close();
 
@@ -282,6 +340,14 @@ public class MainActivity extends WifiActivity {
             }
             btnUpload.setEnabled(true);
             btnSettings.setEnabled(true);
+            btnSelectimages.setEnabled(true);
+            if (SelectedImages.selectedimages.isEmpty()){
+                btnUploadSelected.setEnabled(false);
+            }
+            else {
+                btnUploadSelected.setEnabled(true);
+            }
+
             progressBar.setVisibility(ProgressBar.INVISIBLE);
         }
     }

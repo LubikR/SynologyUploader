@@ -1,51 +1,92 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:gravity="center"
-    android:orientation="vertical"
-    android:visibility="visible">
+    android:layout_height="match_parent">
 
-    <Button
-        android:id="@+id/Settings"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="10dp"
-        android:layout_marginLeft="100dp"
-        android:layout_marginRight="100dp"
-        android:text="@string/buttonSettings"
-        android:visibility="visible" />
+        android:layout_margin="10dp"
+        android:isScrollContainer="false"
+        android:orientation="vertical"
+        android:padding="10dp">
 
-    <Button
-        android:id="@+id/Upload_Now"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="100dp"
-        android:layout_marginRight="100dp"
-        android:enabled="false"
-        android:onClick="uploadNowClick"
-        android:text="@string/buttonGo" />
+         <LinearLayout
+             android:layout_width="match_parent"
+             android:layout_height="match_parent"
+             android:orientation="horizontal">
 
-    <TextView
-        android:id="@+id/textviewStatus"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
-        android:paddingTop="10dp"
-        android:text="@string/counter"
-        android:textSize="18sp"
-        android:visibility="visible" />
+             <Button
+                 android:id="@+id/Settings"
+                 android:layout_width="130dp"
+                 android:layout_height="wrap_content"
+                 android:layout_marginLeft="50dp"
+                 android:layout_marginBottom="10dp"
+                 android:text="@string/buttonSettings"
+                 android:visibility="visible" />
 
-    <ProgressBar
-        android:id="@+id/progressBar"
-        style="?android:attr/progressBarStyleHorizontal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:maxHeight="10dp"
-        android:minHeight="10dp"
-        android:paddingLeft="20dp"
-        android:paddingRight="20dp"
-        android:paddingTop="20dp"
-        android:visibility="invisible" />
+             <Button
+                 android:id="@+id/btnSelectimages"
+                 android:layout_width="130dp"
+                 android:layout_height="wrap_content"
+                 android:layout_gravity="right"
+                 android:layout_marginRight="50dp"
+                 android:layout_marginBottom="10dp"
+                 android:text="@string/buttonSelectimages" />
+         </LinearLayout>
 
-</LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/Upload_Now"
+                android:layout_width="130dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="50dp"
+                android:layout_marginBottom="10dp"
+                android:enabled="false"
+                android:onClick="uploadNowClick"
+                android:text="@string/buttonGo" />
+
+            <Button
+                android:id="@+id/btnUploadselected"
+                android:layout_width="130dp"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="50dp"
+                android:layout_marginBottom="10dp"
+                android:enabled="false"
+                android:onClick="uploadSelectedClick"
+                android:text="@string/buttonGoselection" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/textviewStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:paddingTop="10dp"
+                android:text="@string/counter"
+                android:textSize="18sp"
+                android:visibility="visible" />
+        </LinearLayout>
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:maxHeight="10dp"
+            android:minHeight="10dp"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
+            android:paddingTop="20dp"
+            android:visibility="invisible" />
+    </LinearLayout>
+</ScrollView>
